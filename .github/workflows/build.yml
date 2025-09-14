@@ -1,4 +1,4 @@
-name: 'Publish and Deploy'
+name: Release
 
 on:
     workflow_dispatch:
@@ -7,41 +7,37 @@ on:
                 description: 'Build for macOS aarch64'
                 required: false
                 type: boolean
-                default: true
+                default: false
             build_macos_x86_64:
                 description: 'Build for macOS x86_64'
                 required: false
                 type: boolean
-                default: true
+                default: false
             build_linux_x86_64:
                 description: 'Build for Linux x86_64'
                 required: false
                 type: boolean
-                default: true
+                default: false
             build_linux_aarch64:
                 description: 'Build for Linux aarch64'
                 required: false
                 type: boolean
-                default: true
+                default: false
             build_windows_x86_64:
                 description: 'Build for Windows x86_64'
                 required: false
                 type: boolean
-                default: true
+                default: false
             build_windows_aarch64:
                 description: 'Build for Windows aarch64'
                 required: false
                 type: boolean
-                default: true
-
-permissions:
-    contents: write
-    pages: write
-    id-token: write
-
-concurrency:
-    group: pages
-    cancel-in-progress: false
+                default: false
+    push:
+        tags:
+            - 'v*'
+        # branches:
+        #     - 'main'
 
 jobs:
     publish-tauri:
@@ -59,6 +55,7 @@ jobs:
                       target: 'x86_64-apple-darwin'
                       args: '--target x86_64-apple-darwin'
                       enabled: ${{ github.event.inputs.build_macos_x86_64 == 'true' }}
+
                     - platform: 'ubuntu-22.04'
                       target: 'x86_64-unknown-linux-gnu'
                       args: ''
@@ -67,6 +64,7 @@ jobs:
                       target: 'aarch64-unknown-linux-gnu'
                       args: ''
                       enabled: ${{ github.event.inputs.build_linux_aarch64 == 'true' }}
+
                     - platform: 'windows-latest'
                       target: 'x86_64-pc-windows-msvc'
                       args: ''
@@ -79,25 +77,17 @@ jobs:
         runs-on: ${{ matrix.platform }}
         timeout-minutes: 60
         steps:
-            - name: Checkout
+            - name: Checkout Repository
               if: ${{ matrix.enabled }}
-              uses: actions/checkout@v3
-
-            - name: Check Tauri
-              if: ${{ matrix.enabled }}
-              shell: bash
-              run: |
-                  if [ -z "${{ secrets.TAURI_KEY_PASSWORD }}" ]; then
-                    echo "::error::TAURI_KEY_PASSWORD is required but not set."
-                    exit 1
-                  fi
+              uses: actions/checkout@v4
 
             - name: Install rust target
               if: ${{ matrix.enabled }}
               run: rustup target add ${{ matrix.target }}
 
-            - uses: pnpm/action-setup@v3
+            - name: Setup pnpm
               if: ${{ matrix.enabled }}
+              uses: pnpm/action-setup@v3
               with:
                   version: latest
 
@@ -108,129 +98,43 @@ jobs:
                   node-version: 20
                   cache: pnpm
 
-            - name: Install Rust stable
+            - name: Install frontend dependencies
+              if: ${{ matrix.enabled }}
+              run: pnpm install
+
+            - name: install Rust stable
               if: ${{ matrix.enabled }}
               uses: dtolnay/rust-toolchain@stable
               with:
-                  targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+                  targets: ${{ matrix.target }}
 
-            - name: Install dependencies (ubuntu only)
+            - name: Regenerate Icons
+              if: ${{ matrix.enabled }}
+              run: pnpm tauri icon
+
+            - name: Init Project Config
+              if: ${{ matrix.enabled }}
+              run: node ./scripts/ppworker.cjs
+
+            - name: install dependencies (ubuntu only)
               if: ${{ matrix.enabled && matrix.platform == 'ubuntu-22.04'}}
               run: |
                   sudo apt-get update
                   sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
-            - name: Install frontend dependencies
+            - name: tauri release
               if: ${{ matrix.enabled }}
-              run: pnpm install
-
-            - name: import Apple Developer Certificate
-              if: ${{ matrix.enabled && matrix.platform == 'macos-latest'}}
-              env:
-                  APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-                  APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-                  KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-              run: |
-                  echo $APPLE_CERTIFICATE | base64 --decode > certificate.p12
-                  security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-                  security default-keychain -s build.keychain
-                  security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-                  security set-keychain-settings -t 3600 -u build.keychain
-                  security import certificate.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
-                  security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
-                  security find-identity -v -p codesigning build.keychain
-
-            - name: verify certificate
-              if: ${{ matrix.enabled && matrix.platform == 'macos-latest'}}
-              run: |
-                  CERT_INFO=$(security find-identity -v -p codesigning build.keychain | grep "Developer ID Application")
-                  CERT_ID=$(echo "$CERT_INFO" | awk -F'"' '{print $2}')
-                  echo "CERT_ID=$CERT_ID" >> $GITHUB_ENV
-                  echo "Certificate imported."
-
-            - uses: tauri-apps/tauri-action@v0
-              if: ${{ matrix.enabled }}
+              uses: Sjj1024/tauri-zhaction@tauri-zhaciton
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  APPLE_ID: ${{ secrets.APPLE_ID }}
-                  APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-                  APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-                  APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-                  APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-                  APPLE_SIGNING_IDENTITY: ${{ env.CERT_ID }}
-                  TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-                  TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-                  VITE_GITHUB_DOMAIN: ${{ secrets.VITE_GITHUB_DOMAIN }}
-                  VITE_PAYJS_DOMAIN: ${{ secrets.VITE_PAYJS_DOMAIN }}
-                  VITE_PAYJS_MCHID: ${{ secrets.VITE_PAYJS_MCHID }}
-                  VITE_PAYJS_SIGN_KEY: ${{ secrets.VITE_PAYJS_SIGN_KEY }}
-                  VITE_YUNPAY_DOMAIN: ${{ secrets.VITE_YUNPAY_DOMAIN }}
-                  VITE_YUNPAY_MCHID: ${{ secrets.VITE_YUNPAY_MCHID }}
-                  VITE_YUNPAY_SIGN_KEY: ${{ secrets.VITE_YUNPAY_SIGN_KEY }}
-                  VITE_ZPAY_DOMAIN: ${{ secrets.VITE_ZPAY_DOMAIN }}
-                  VITE_ZPAY_MCHID: ${{ secrets.VITE_ZPAY_MCHID }}
-                  VITE_ZPAY_SIGN_KEY: ${{ secrets.VITE_ZPAY_SIGN_KEY }}
-                  VITE_GTAG_ID: ${{ secrets.VITE_GTAG_ID }}
-                  VITE_UPSTREAM_USER: ${{ secrets.VITE_UPSTREAM_USER }}
-                  VITE_WEB_BRANCH: ${{ secrets.VITE_WEB_BRANCH }}
-                  VITE_DEV_BRANCH: ${{ secrets.VITE_DEV_BRANCH }}
-                  VITE_MAIN_BRANCH: ${{ secrets.VITE_MAIN_BRANCH }}
-                  VITE_FILE_LIMIT_SIZE: ${{ secrets.VITE_FILE_LIMIT_SIZE }}
-                  VITE_FILE_LIMIT_NUMBER: ${{ secrets.VITE_FILE_LIMIT_NUMBER }}
-                  VITE_LOCAL_RHEXE: ${{ secrets.VITE_LOCAL_RHEXE }}
+                  NAME: ${{ env.NAME }}
+                  VERSION: ${{ env.VERSION }}
+                  PUBBODY: ${{ env.PUBBODY }}
               with:
-                  tagName: 'PacBao-v__VERSION__'
-                  releaseName: 'PacBao v__VERSION__'
-                  body_path: ./Note.md
-                  releaseDraft: true
+                  tagName: '${{ env.NAME }}'
+                  releaseName: '${{ env.NAME }} v${{ env.VERSION }}'
+                  releaseBody: '${{ env.PUBBODY }}'
+                  releaseDraft: false
                   prerelease: false
                   args: ${{ matrix.args }}
-
-    deploy-pages:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
-
-            - uses: pnpm/action-setup@v3
-              with:
-                  version: 9
-
-            - name: Setup Node
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 20
-                  cache: pnpm
-
-            - name: Setup Pages
-              uses: actions/configure-pages@v4
-
-            - name: Install dependencies
-              run: pnpm install
-
-            - name: GitPress Config
-              run: node ./scripts/gitpress.cjs gitBase
-
-            - name: Build with VitePress
-              run: pnpm run docs:build
-
-            - name: Copy Static
-              run: node ./scripts/gitpress.cjs copyStatic
-
-            - name: Upload artifact
-              uses: actions/upload-pages-artifact@v3
-              with:
-                  path: docs/dist
-
-    deploy:
-        environment:
-            name: github-pages
-            url: ${{ steps.deployment.outputs.page_url }}
-        needs: deploy-pages
-        runs-on: ubuntu-latest
-        steps:
-            - name: Deploy to GitHub Pages
-              id: deployment
-              uses: actions/deploy-pages@v4
+                  renameArtifacts: '${{ env.NAME }}'
