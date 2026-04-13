@@ -16,7 +16,7 @@
 
 ### Web beta
 
--   Not recommended as it is a beta version.（不推荐，因为是 beta 版本）
+-   Not recommended as it is a beta version
 -   https://PacBao.pages.dev
 -   https://PacBao.netlify.app
 
