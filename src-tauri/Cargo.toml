@@ -1,8 +1,8 @@
 [package]
-name = "PacBao"
-version = "1.0.5"
-description = "Turn any webpage into a desktop app and mobile app with Rust."
-authors = ["1024xiaoshen"]
+name = "pacbao"
+version = "0.1.0"
+description = "A Tauri App"
+authors = ["you"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -11,31 +11,15 @@ edition = "2021"
 # The `_lib` suffix may seem redundant but it is necessary
 # to make the lib name unique and wouldn't conflict with the bin name.
 # This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
-name = "PacBao_lib"
+name = "pacbao_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = ["protocol-asset", "image-png", "image-ico"] }
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-open = "5.3.2"
-base64 = "0.22.1"
-tokio = { version = "1", features = ["full"] }
-warp = "0.3"
-zip = "4.1.0"
-walkdir = "2.5.0"
-machine-uid = "0.5.3"
-futures = "0.3.31"
-encoding_rs = "0.8"
-notify-rust = "4.11.7"
-tauri-plugin-os = "2.0.0"
-tauri-plugin-fs = "2.0.0"
-tauri-plugin-dialog = "2.0.0"
-tauri-plugin-http = { version = "2", features = ["unsafe-headers"] }
-tauri-plugin-clipboard-manager = "2.0.0"
-tauri-plugin-store = "2.0.0"
-tauri-plugin-process = "2"
-tauri-plugin-updater = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
+

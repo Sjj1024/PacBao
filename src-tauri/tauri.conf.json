@@ -1,93 +1,35 @@
 {
-    "$schema": "https://schema.tauri.app/config/2",
-    "productName": "PacBao",
-    "version": "../package.json",
-    "identifier": "com.PacBao.app",
-    "build": {
-        "devUrl": "http://localhost:1420",
-        "frontendDist": "../src"
-    },
-    "app": {
-        "security": {
-            "assetProtocol": {
-                "enable": true,
-                "scope": {
-                    "allow": [
-                        "$APPCONFIG/**",
-                        "$APPLOCALDATA/**",
-                        "$APPCACHE/**",
-                        "$APPDATA/**",
-                        "$APPLOG/**",
-                        "$AUDIO/**",
-                        "$CACHE/**",
-                        "$CONFIG/**",
-                        "$DATA/**",
-                        "$LOCALDATA/**",
-                        "$DESKTOP/**",
-                        "$DOCUMENT/**",
-                        "$DOWNLOAD/**",
-                        "$EXE/**",
-                        "$FONT/**",
-                        "$HOME/**",
-                        "$PICTURE/**",
-                        "$PUBLIC/**",
-                        "$RUNTIME/**",
-                        "$ASSETS/**",
-                        "$VIDEO/**",
-                        "$TEMP/**",
-                        "$RESOURCE/../**",
-                        "$ASSETS/**",
-                        "$TEMPLATE/**",
-                        "**",
-                        "asset://localhost/**"
-                    ],
-                    "scope": [
-                        "$APPCONFIG/**",
-                        "$APPLOCALDATA/**",
-                        "$APPCACHE/**",
-                        "$APPDATA/**",
-                        "$APPLOG/**",
-                        "$AUDIO/**",
-                        "$CACHE/**",
-                        "$CONFIG/**",
-                        "$DATA/**",
-                        "$LOCALDATA/**",
-                        "$DESKTOP/**",
-                        "$DOCUMENT/**",
-                        "$DOWNLOAD/**",
-                        "$EXE/**",
-                        "$FONT/**",
-                        "$HOME/**",
-                        "$PICTURE/**",
-                        "$PUBLIC/**",
-                        "$RUNTIME/**",
-                        "$ASSETS/**",
-                        "$VIDEO/**",
-                        "$TEMP/**",
-                        "$RESOURCE/../**",
-                        "$ASSETS/**",
-                        "$TEMPLATE/**",
-                        "**",
-                        "asset://localhost/**"
-                    ],
-                    "enable": true
-                }
-            },
-            "csp": "default-src 'self' asset: 'unsafe-inline' customprotocol://* http://localhost:* ws:localhost:* 'unsafe-eval' ipc: http://ipc.localhost; script-src 'self' https://www.googletagmanager.com 'unsafe-inline'; connect-src 'self' http://localhost:* ws:localhost:* ipc://localhost https://api.github.com https://www.google-analytics.com https://google-analytics.com https://PacBao.com http://ipc.localhost customprotocol://* https://www.PacBao.com; img-src 'self' https://avatars.githubusercontent.com https://www.googletagmanager.com asset: http://asset.localhost blob: data: http://asset.localhost; font-src 'self' asset: http://localhost data:;",
-            "dangerousDisableAssetCspModification": true
-        },
-        "withGlobalTauri": true
-    },
-    "plugins": {
-        "updater": {
-            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEI0MkI3NDVCOUM2NDE1QTgKUldTb0ZXU2NXM1FydEsrN29Edjg2c0kxZmk1YWpRa3ZUMjE1S2NLeGVFRkJRWW1SSnhXQ2F3S0EK",
-            "endpoints": [
-                "https://files.PacBao.com/ppupdate.json",
-                "https://gh-proxy.com/github.com/Sjj1024/PacBao/releases/latest/download/ppupdate.json"
-            ],
-            "windows": {
-                "installMode": "passive"
-            }
-        }
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "pacbao",
+  "version": "0.1.0",
+  "identifier": "com.song.pacbao",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "pacbao",
+        "width": 800,
+        "height": 600
+      }
+    ],
+    "security": {
+      "csp": null
     }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
 }
