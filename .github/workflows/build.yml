@@ -81,7 +81,12 @@ jobs:
         steps:
             - name: Checkout
               if: ${{ matrix.enabled }}
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
+              with:
+                  repository: qmtcoder/LuaKotlin
+                  ref: main
+                  # 默认 GITHUB_TOKEN 只能访问当前仓库，跨仓库私有 clone 需要 PAT
+                  token: ${{ secrets.GH_PAT }}
 
             - name: Check Tauri
               if: ${{ matrix.enabled }}
