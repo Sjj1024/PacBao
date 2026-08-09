@@ -58,9 +58,9 @@ export const koAccountStrings = {
         '데스크톱에서 디버깅·관리할 수 있도록 더 많은 TauriApi 설정을 지원할 예정입니다.',
 
     aboutDescription:
-        'TauriHub — 웹 앱을 크로스 플랫폼 데스크톱·모바일로 빠르게 패키징합니다.',
+        'PacBao — 웹 앱을 크로스 플랫폼 데스크톱·모바일로 빠르게 패키징합니다.',
     aboutBody:
-        'TauriHub는 Tauri 2와 Next.js를 기반으로 웹 프로젝트를 Windows, macOS, Linux 데스크톱 및 모바일 설치 패키지로 빠르게 빌드할 수 있게 돕습니다.',
+        'PacBao는 Tauri 2와 Next.js를 기반으로 웹 프로젝트를 Windows, macOS, Linux 데스크톱 및 모바일 설치 패키지로 빠르게 빌드할 수 있게 돕습니다.',
     aboutDesktopBadge: '데스크톱 클라이언트에서 실행 중',
     aboutOpenSourcePrefix: '오픈소스입니다. 자세한 내용은',
     aboutOpenSourceSuffix: '에서 확인하세요.',

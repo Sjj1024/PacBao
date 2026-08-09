@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-    title: 'PakePlus',
+    title: 'PacBao',
     description: 'Local multi-platform template packager',
 }
 

@@ -3,7 +3,7 @@ import { SettingsPageClient } from '@/components/settings/settings-page-client'
 
 export const metadata: Metadata = {
     title: 'Settings',
-    description: 'PakePlus desktop packager settings',
+    description: 'PacBao desktop packager settings',
 }
 
 export default function SettingsPage() {

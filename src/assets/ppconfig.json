@@ -155,8 +155,8 @@
         }
     },
     "ios": {
-        "name": "PakePlus",
-        "showName": "PakePlus",
+        "name": "PacBao",
+        "showName": "PacBao",
         "version": "0.0.1",
         "webUrl": "https://juejin.cn/",
         "id": "com.xiaoshen.pakeplus.ios",
@@ -168,8 +168,8 @@
         "safeArea": "all"
     },
     "android": {
-        "name": "PakePlus",
-        "showName": "PakePlus",
+        "name": "PacBao",
+        "showName": "PacBao",
         "version": "0.0.1",
         "webUrl": "https://juejin.cn/",
         "id": "com.xiaoshen.pakeplus.android",
@@ -186,7 +186,7 @@
         "safeArea": "all"
     },
     "desktop": {
-        "name": "PakePlus2",
+        "name": "PacBao",
         "showName": "xiaoshen",
         "version": "0.0.2",
         "id": "com.xiaoshen.app",

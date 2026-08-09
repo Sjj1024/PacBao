@@ -58,9 +58,9 @@ export const enAccountStrings = {
         'More TauriApi options are coming to help debug and manage desktop apps.',
 
     aboutDescription:
-        'TauriHub — package web apps into cross-platform desktop and mobile apps.',
+        'PacBao — package web apps into cross-platform desktop and mobile apps.',
     aboutBody:
-        'Built with Tauri 2 and Next.js, TauriHub helps you turn web projects into Windows, macOS, and Linux desktops plus mobile installers.',
+        'Built with Tauri 2 and Next.js, PacBao helps you turn web projects into Windows, macOS, and Linux desktops plus mobile installers.',
     aboutDesktopBadge: 'Running in the desktop client',
     aboutOpenSourcePrefix: 'Open source — visit',
     aboutOpenSourceSuffix: 'for details.',

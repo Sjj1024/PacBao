@@ -54,9 +54,9 @@ export const zhTWAccountStrings = {
     tauriApiPlaceholderBody:
         '即將支援更多 TauriApi 相關設定，便於在桌面端除錯與管理應用。',
 
-    aboutDescription: 'TauriHub — 將 Web 應用快速打包為跨平台桌面與行動端應用。',
+    aboutDescription: 'PacBao — 將 Web 應用快速打包為跨平台桌面與行動端應用。',
     aboutBody:
-        'TauriHub 基於 Tauri 2 與 Next.js，幫助你將 Web 專案快速建置為 Windows、macOS、Linux 桌面應用及行動端安裝包。',
+        'PacBao 基於 Tauri 2 與 Next.js，幫助你將 Web 專案快速建置為 Windows、macOS、Linux 桌面應用及行動端安裝包。',
     aboutDesktopBadge: '目前執行於桌面用戶端',
     aboutOpenSourcePrefix: '開源專案，歡迎造訪',
     aboutOpenSourceSuffix: '了解詳情。',

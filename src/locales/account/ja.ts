@@ -58,9 +58,9 @@ export const jaAccountStrings = {
         'デスクトップでのデバッグと管理のため、より多くの TauriApi 設定に対応予定です。',
 
     aboutDescription:
-        'TauriHub — Web アプリをクロスプラットフォームのデスクトップ／モバイルへ。',
+        'PacBao — Web アプリをクロスプラットフォームのデスクトップ／モバイルへ。',
     aboutBody:
-        'TauriHub は Tauri 2 と Next.js を基盤に、Web プロジェクトを Windows / macOS / Linux デスクトップおよびモバイルインストーラへ素早くビルドできます。',
+        'PacBao は Tauri 2 と Next.js を基盤に、Web プロジェクトを Windows / macOS / Linux デスクトップおよびモバイルインストーラへ素早くビルドできます。',
     aboutDesktopBadge: 'デスクトップクライアントで実行中',
     aboutOpenSourcePrefix: 'オープンソースです。詳細は',
     aboutOpenSourceSuffix: 'をご覧ください。',
