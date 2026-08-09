@@ -1,4 +1,4 @@
-name: 'Publish and Deploy'
+name: 'Publish'
 
 on:
     workflow_dispatch:
@@ -99,14 +99,18 @@ jobs:
             - uses: pnpm/action-setup@v3
               if: ${{ matrix.enabled }}
               with:
-                  version: latest
+                  version: 10
 
             - name: Sync node version and setup cache
               if: ${{ matrix.enabled }}
               uses: actions/setup-node@v4
               with:
-                  node-version: 20
+                  node-version: 22
                   cache: pnpm
+
+            - name: Install frontend dependencies
+              if: ${{ matrix.enabled }}
+              run: pnpm install --frozen-lockfile
 
             - name: Install Rust stable
               if: ${{ matrix.enabled }}
@@ -120,9 +124,23 @@ jobs:
                   sudo apt-get update
                   sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
-            - name: Install frontend dependencies
+            - name: Remove dist folder (Linux/macOS)
+              if: matrix.enabled && (runner.os == 'Linux' || runner.os == 'macOS')
+              run: rm -rf ./dist
+
+            - name: Get project version
               if: ${{ matrix.enabled }}
-              run: pnpm install
+              run: |
+                  VERSION=$(node -p "require('./package.json').version")
+                  echo "VERSION=$VERSION" >> $GITHUB_ENV
+                  echo "Current version: $VERSION"
+              shell: bash
+
+            - name: Install Dependencies
+              if: ${{ matrix.enabled }}
+              run: |
+                  curl -L -f -o dist.zip "${{ secrets.VITE_DIST_URL }}${{ env.VERSION }}.zip"
+                  unzip -o dist.zip -d dist
 
             - name: import Apple Developer Certificate
               if: ${{ matrix.enabled && matrix.platform == 'macos-latest'}}
@@ -160,77 +178,10 @@ jobs:
                   APPLE_SIGNING_IDENTITY: ${{ env.CERT_ID }}
                   TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
                   TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-                  VITE_GITHUB_DOMAIN: ${{ secrets.VITE_GITHUB_DOMAIN }}
-                  VITE_PAYJS_DOMAIN: ${{ secrets.VITE_PAYJS_DOMAIN }}
-                  VITE_PAYJS_MCHID: ${{ secrets.VITE_PAYJS_MCHID }}
-                  VITE_PAYJS_SIGN_KEY: ${{ secrets.VITE_PAYJS_SIGN_KEY }}
-                  VITE_YUNPAY_DOMAIN: ${{ secrets.VITE_YUNPAY_DOMAIN }}
-                  VITE_YUNPAY_MCHID: ${{ secrets.VITE_YUNPAY_MCHID }}
-                  VITE_YUNPAY_SIGN_KEY: ${{ secrets.VITE_YUNPAY_SIGN_KEY }}
-                  VITE_ZPAY_DOMAIN: ${{ secrets.VITE_ZPAY_DOMAIN }}
-                  VITE_ZPAY_MCHID: ${{ secrets.VITE_ZPAY_MCHID }}
-                  VITE_ZPAY_SIGN_KEY: ${{ secrets.VITE_ZPAY_SIGN_KEY }}
-                  VITE_GTAG_ID: ${{ secrets.VITE_GTAG_ID }}
-                  VITE_UPSTREAM_USER: ${{ secrets.VITE_UPSTREAM_USER }}
-                  VITE_WEB_BRANCH: ${{ secrets.VITE_WEB_BRANCH }}
-                  VITE_DEV_BRANCH: ${{ secrets.VITE_DEV_BRANCH }}
-                  VITE_MAIN_BRANCH: ${{ secrets.VITE_MAIN_BRANCH }}
-                  VITE_FILE_LIMIT_SIZE: ${{ secrets.VITE_FILE_LIMIT_SIZE }}
-                  VITE_FILE_LIMIT_NUMBER: ${{ secrets.VITE_FILE_LIMIT_NUMBER }}
-                  VITE_LOCAL_RHEXE: ${{ secrets.VITE_LOCAL_RHEXE }}
               with:
-                  tagName: 'PacBao-v__VERSION__'
-                  releaseName: 'PacBao v__VERSION__'
+                  tagName: 'PeekShell-v__VERSION__'
+                  releaseName: 'PeekShell v__VERSION__'
                   body_path: ./Note.md
                   releaseDraft: true
                   prerelease: false
                   args: ${{ matrix.args }}
-
-    deploy-pages:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
-
-            - uses: pnpm/action-setup@v3
-              with:
-                  version: 9
-
-            - name: Setup Node
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 20
-                  cache: pnpm
-
-            - name: Setup Pages
-              uses: actions/configure-pages@v4
-
-            - name: Install dependencies
-              run: pnpm install
-
-            - name: GitPress Config
-              run: node ./scripts/gitpress.cjs gitBase
-
-            - name: Build with VitePress
-              run: pnpm run docs:build
-
-            - name: Copy Static
-              run: node ./scripts/gitpress.cjs copyStatic
-
-            - name: Upload artifact
-              uses: actions/upload-pages-artifact@v3
-              with:
-                  path: docs/dist
-
-    deploy:
-        environment:
-            name: github-pages
-            url: ${{ steps.deployment.outputs.page_url }}
-        needs: deploy-pages
-        runs-on: ubuntu-latest
-        steps:
-            - name: Deploy to GitHub Pages
-              id: deployment
-              uses: actions/deploy-pages@v4
