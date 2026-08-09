@@ -1,0 +1,34 @@
+export type HomeStrings = {
+    pageTitle: string
+    pageSubtitle: string
+    languageLabel: string
+    addProject: string
+    defaultProjectDesc: string
+    createProjectTitle: string
+    projectNameLabel: string
+    projectNamePlaceholder: string
+    cancel: string
+    confirm: string
+    creating: string
+    createProjectFailed: string
+    loadProjectsFailed: string
+    loadingProjects: string
+    retry: string
+    projectNameRequired: string
+    githubAria: string
+    themeSwitchToLight: string
+    themeSwitchToDark: string
+    settingsAria: string
+    userMenuAria: string
+    menuAria: string
+    editProject: string
+    deleteProject: string
+    deleteProjectConfirm: string
+    deleteProjectFailed: string
+    deleting: string
+    updateTitle: string
+    updateAvailableFallback: string
+    updating: string
+    updateFailed: string
+    noticeTitle: string
+}
