@@ -47,6 +47,9 @@ jobs:
     publish-tauri:
         permissions:
             contents: write
+        defaults:
+            run:
+                working-directory: pacbao-desktop
         strategy:
             fail-fast: false
             matrix:
@@ -112,6 +115,7 @@ jobs:
               with:
                   node-version: 22
                   cache: pnpm
+                  cache-dependency-path: pacbao-desktop/pnpm-lock.yaml
 
             - name: Install frontend dependencies
               if: ${{ matrix.enabled }}
@@ -129,10 +133,6 @@ jobs:
                   sudo apt-get update
                   sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
-            - name: Remove dist folder (Linux/macOS)
-              if: matrix.enabled && (runner.os == 'Linux' || runner.os == 'macOS')
-              run: rm -rf ./dist
-
             - name: Get project version
               if: ${{ matrix.enabled }}
               run: |
@@ -140,12 +140,6 @@ jobs:
                   echo "VERSION=$VERSION" >> $GITHUB_ENV
                   echo "Current version: $VERSION"
               shell: bash
-
-            - name: Install Dependencies
-              if: ${{ matrix.enabled }}
-              run: |
-                  curl -L -f -o dist.zip "${{ secrets.VITE_DIST_URL }}${{ env.VERSION }}.zip"
-                  unzip -o dist.zip -d dist
 
             - name: import Apple Developer Certificate
               if: ${{ matrix.enabled && matrix.platform == 'macos-latest'}}
@@ -184,8 +178,9 @@ jobs:
                   TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
                   TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
               with:
-                  tagName: 'PeekShell-v__VERSION__'
-                  releaseName: 'PeekShell v__VERSION__'
+                  projectPath: pacbao-desktop
+                  tagName: 'PabBao-v__VERSION__'
+                  releaseName: 'PabBao v__VERSION__'
                   body_path: ./Note.md
                   releaseDraft: true
                   prerelease: false
