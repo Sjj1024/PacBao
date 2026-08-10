@@ -181,7 +181,7 @@ jobs:
                   projectPath: pacbao-desktop
                   tagName: 'PabBao-v__VERSION__'
                   releaseName: 'PabBao v__VERSION__'
-                  body_path: ./Note.md
+                  body_path: pacbao-desktop/Note.md
                   releaseDraft: true
                   prerelease: false
                   args: ${{ matrix.args }}
