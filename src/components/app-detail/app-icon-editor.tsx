@@ -19,6 +19,8 @@ const MIN_SCALE = 1
 const MAX_SCALE = 3
 /** Scale change per wheel notch (deltaY ≈ ±100). */
 const WHEEL_ZOOM_FACTOR = 0.0012
+/** Multiplicative zoom for ctrl+wheel (Windows trackpad pinch). */
+const CTRL_WHEEL_ZOOM_FACTOR = 0.01
 
 export type AppIconEditorLabels = {
     title: string
@@ -45,8 +47,27 @@ type AppIconEditorProps = {
     onConfirm: (result: AppIconEditorResult) => void
 }
 
+type Point = { x: number; y: number }
+
+type PinchSession = {
+    startDistance: number
+    startScale: number
+    startMid: Point
+    startOffset: Point
+}
+
 function clampScale(scale: number) {
     return Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale))
+}
+
+function pointerDistance(a: Point, b: Point) {
+    const dx = a.x - b.x
+    const dy = a.y - b.y
+    return Math.hypot(dx, dy)
+}
+
+function pointerMidpoint(a: Point, b: Point): Point {
+    return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }
 }
 
 export function AppIconEditor({
@@ -59,9 +80,13 @@ export function AppIconEditor({
     onConfirm,
 }: AppIconEditorProps) {
     const titleId = useId()
-    const radiusId = useId()
     const previewRef = useRef<HTMLDivElement>(null)
-    const dragRef = useRef<{ x: number; y: number } | null>(null)
+    const dragRef = useRef<Point | null>(null)
+    const pointersRef = useRef<Map<number, Point>>(new Map())
+    const pinchRef = useRef<PinchSession | null>(null)
+    const transformRef = useRef<IconTransform>(
+        initialTransform ?? getDefaultIconTransform()
+    )
     const [transform, setTransform] = useState<IconTransform>(
         initialTransform ?? getDefaultIconTransform()
     )
@@ -73,19 +98,34 @@ export function AppIconEditor({
     )
     const [submitting, setSubmitting] = useState(false)
 
+    transformRef.current = transform
+
     useEffect(() => {
         if (!open) return
-        setTransform(initialTransform ?? getDefaultIconTransform())
+        const next = initialTransform ?? getDefaultIconTransform()
+        setTransform(next)
+        transformRef.current = next
         setBorderRadius(initialBorderRadius ?? DEFAULT_ICON_BORDER_RADIUS)
+        pointersRef.current.clear()
+        pinchRef.current = null
+        dragRef.current = null
     }, [open, initialTransform, initialBorderRadius, source])
 
     useEffect(() => {
-        if (!open || !source) return
+        if (!open || !source) {
+            setImageSize(null)
+            return
+        }
+        setImageSize(null)
         const img = new Image()
         img.onload = () => {
             setImageSize({ w: img.naturalWidth, h: img.naturalHeight })
         }
-        img.src = source
+        img.onerror = () => {
+            setImageSize(null)
+        }
+        // Must use convertFileSrc for on-disk project icons (same as <img>).
+        img.src = toIconSrc(source)
     }, [open, source])
 
     useEffect(() => {
@@ -97,13 +137,27 @@ export function AppIconEditor({
         return () => document.removeEventListener('keydown', onKey)
     }, [open, onClose])
 
-    // Non-passive wheel listener so we can prevent page scroll while zooming.
+    // Non-passive wheel listener so we can prevent page scroll / browser zoom.
+    // Windows Precision Touchpad pinch is often delivered as ctrl+wheel.
     useEffect(() => {
         if (!open) return
         const el = previewRef.current
         if (!el) return
 
         const onWheel = (e: WheelEvent) => {
+            const overPreview = el.contains(e.target as Node)
+            // Always block browser page-zoom while the editor is open.
+            if (e.ctrlKey) {
+                e.preventDefault()
+                if (!overPreview) return
+                const zoom = Math.exp(-e.deltaY * CTRL_WHEEL_ZOOM_FACTOR)
+                setTransform((prev) => ({
+                    ...prev,
+                    scale: clampScale(prev.scale * zoom),
+                }))
+                return
+            }
+            if (!overPreview) return
             e.preventDefault()
             const delta = -e.deltaY * WHEEL_ZOOM_FACTOR
             setTransform((prev) => ({
@@ -112,8 +166,8 @@ export function AppIconEditor({
             }))
         }
 
-        el.addEventListener('wheel', onWheel, { passive: false })
-        return () => el.removeEventListener('wheel', onWheel)
+        document.addEventListener('wheel', onWheel, { passive: false })
+        return () => document.removeEventListener('wheel', onWheel)
     }, [open])
 
     if (!open) return null
@@ -128,12 +182,62 @@ export function AppIconEditor({
         : null
     const previewRadius = `${borderRadius}%`
 
+    function beginPinch() {
+        const pts = [...pointersRef.current.values()]
+        if (pts.length < 2) return
+        const current = transformRef.current
+        pinchRef.current = {
+            startDistance: Math.max(pointerDistance(pts[0], pts[1]), 1),
+            startScale: current.scale,
+            startMid: pointerMidpoint(pts[0], pts[1]),
+            startOffset: { x: current.x, y: current.y },
+        }
+        dragRef.current = null
+    }
+
     function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
+        e.preventDefault()
         e.currentTarget.setPointerCapture(e.pointerId)
+        pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+        if (pointersRef.current.size >= 2) {
+            beginPinch()
+            return
+        }
+
+        pinchRef.current = null
         dragRef.current = { x: e.clientX, y: e.clientY }
     }
 
     function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
+        if (!pointersRef.current.has(e.pointerId)) return
+        pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+        if (pointersRef.current.size >= 2) {
+            if (!pinchRef.current) beginPinch()
+            const pinch = pinchRef.current
+            if (!pinch) return
+
+            const pts = [...pointersRef.current.values()]
+            const distance = Math.max(pointerDistance(pts[0], pts[1]), 1)
+            const mid = pointerMidpoint(pts[0], pts[1])
+            const nextScale = clampScale(
+                pinch.startScale * (distance / pinch.startDistance)
+            )
+            // Keep the pinch midpoint anchored relative to the image.
+            const scaleRatio = nextScale / pinch.startScale
+            setTransform({
+                scale: nextScale,
+                x:
+                    pinch.startOffset.x * scaleRatio +
+                    (mid.x - pinch.startMid.x),
+                y:
+                    pinch.startOffset.y * scaleRatio +
+                    (mid.y - pinch.startMid.y),
+            })
+            return
+        }
+
         if (!dragRef.current) return
         const dx = e.clientX - dragRef.current.x
         const dy = e.clientY - dragRef.current.y
@@ -146,8 +250,25 @@ export function AppIconEditor({
     }
 
     function handlePointerUp(e: React.PointerEvent<HTMLDivElement>) {
-        dragRef.current = null
-        e.currentTarget.releasePointerCapture(e.pointerId)
+        pointersRef.current.delete(e.pointerId)
+        try {
+            e.currentTarget.releasePointerCapture(e.pointerId)
+        } catch {
+            /* already released */
+        }
+
+        if (pointersRef.current.size >= 2) {
+            beginPinch()
+            return
+        }
+
+        pinchRef.current = null
+        if (pointersRef.current.size === 1) {
+            const remaining = [...pointersRef.current.values()][0]
+            dragRef.current = { x: remaining.x, y: remaining.y }
+        } else {
+            dragRef.current = null
+        }
     }
 
     async function handleConfirm() {
@@ -197,6 +318,7 @@ export function AppIconEditor({
                             width: ICON_VIEWPORT_SIZE,
                             height: ICON_VIEWPORT_SIZE,
                             borderRadius: previewRadius,
+                            touchAction: 'none',
                         }}
                         onPointerDown={handlePointerDown}
                         onPointerMove={handlePointerMove}
@@ -222,27 +344,6 @@ export function AppIconEditor({
                             style={{ borderRadius: previewRadius }}
                         />
                     </div>
-                </div>
-
-                <div className="mt-5 flex flex-col gap-2">
-                    <label
-                        htmlFor={radiusId}
-                        className="text-sm font-medium text-zinc-800 dark:text-zinc-200"
-                    >
-                        {labels.radiusLabel} ({borderRadius}%)
-                    </label>
-                    <input
-                        id={radiusId}
-                        type="range"
-                        min={0}
-                        max={50}
-                        step={1}
-                        value={borderRadius}
-                        onChange={(e) =>
-                            setBorderRadius(Number(e.target.value))
-                        }
-                        className="h-2 w-full cursor-pointer accent-zinc-900 dark:accent-zinc-100"
-                    />
                 </div>
 
                 <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-center">

@@ -106,6 +106,37 @@ export async function resolveIconUrl(
 }
 
 /**
+ * Resolve an icon into a same-origin URL safe for canvas `toDataURL`.
+ * On-disk Tauri paths are read as data URLs to avoid tainted-canvas SecurityError.
+ */
+export async function resolveIconForCanvas(icon: string): Promise<string> {
+    const value = icon.trim()
+    if (!value) return ''
+    if (
+        isDataUrl(value) ||
+        value.startsWith('blob:') ||
+        value.startsWith('http://') ||
+        value.startsWith('https://')
+    ) {
+        return value
+    }
+    if (isFilesystemIconPath(value) && isTauri()) {
+        try {
+            return await invoke<string>('read_project_icon', { path: value })
+        } catch (err) {
+            const message =
+                err instanceof Error
+                    ? err.message
+                    : typeof err === 'string'
+                      ? err
+                      : 'failed to read icon'
+            throw new FileApiError(message)
+        }
+    }
+    return toIconSrc(value)
+}
+
+/**
  * Write icon + source to disk when they are data URLs.
  * Deduplicates when both values are the same string.
  */

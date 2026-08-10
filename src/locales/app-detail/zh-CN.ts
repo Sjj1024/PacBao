@@ -41,7 +41,7 @@ export const zhCNAppDetailStrings = {
     iconRemove: '移除图标',
     iconHint: '支持 PNG、JPG、WebP，可裁剪并设置圆角',
     iconEditorTitle: '编辑图标',
-    iconCropHint: '拖动图片调整位置，滚轮缩放，滑块设置圆角',
+    iconCropHint: '拖动图片调整位置，滚轮或双指捏合缩放',
     iconRadiusLabel: '圆角',
     save: '保存',
     saving: '保存中…',

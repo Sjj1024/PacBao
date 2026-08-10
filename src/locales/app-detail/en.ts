@@ -41,7 +41,7 @@ export const enAppDetailStrings = {
     iconRemove: 'Remove icon',
     iconHint: 'PNG, JPG, or WebP. Crop and round corners supported.',
     iconEditorTitle: 'Edit icon',
-    iconCropHint: 'Drag to reposition. Scroll to zoom. Use the slider for round corners.',
+    iconCropHint: 'Drag to reposition. Scroll or pinch to zoom.',
     iconRadiusLabel: 'Corner radius',
     save: 'Save',
     saving: 'Saving…',

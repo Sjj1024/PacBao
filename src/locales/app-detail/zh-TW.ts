@@ -41,7 +41,7 @@ export const zhTWAppDetailStrings = {
     iconRemove: '移除圖示',
     iconHint: '支援 PNG、JPG、WebP，可裁剪並設定圓角',
     iconEditorTitle: '編輯圖示',
-    iconCropHint: '拖動圖片調整位置，滾輪縮放，滑桿設定圓角',
+    iconCropHint: '拖動圖片調整位置，滾輪或雙指捏合縮放',
     iconRadiusLabel: '圓角',
     save: '儲存',
     saving: '儲存中…',

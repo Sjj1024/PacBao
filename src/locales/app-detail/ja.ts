@@ -41,7 +41,7 @@ export const jaAppDetailStrings = {
     iconRemove: 'アイコンを削除',
     iconHint: 'PNG、JPG、WebP 対応。切り抜きと角丸に対応。',
     iconEditorTitle: 'アイコンを編集',
-    iconCropHint: 'ドラッグで位置調整。ホイールで拡大。スライダーで角丸。',
+    iconCropHint: 'ドラッグで位置調整。ホイールまたはピンチで拡大。',
     iconRadiusLabel: '角丸',
     save: '保存',
     saving: '保存中…',

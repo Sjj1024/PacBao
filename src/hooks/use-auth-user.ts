@@ -18,7 +18,7 @@ type AuthSession = {
 
 /** Current signed-in user; validates Bearer token via GET /me when present. */
 export function useAuthUser(): AuthSession {
-    const [user, setUser] = useState<AuthUser | null>(null)
+    const [user, setUser] = useState<AuthUser | null>(() => getAuthUser())
     const [ready, setReady] = useState(false)
 
     useEffect(() => {
@@ -32,6 +32,11 @@ export function useAuthUser(): AuthSession {
                     setReady(true)
                 }
                 return
+            }
+
+            // Keep cached user while validating so local saves aren't blocked.
+            if (!cancelled) {
+                setUser((prev) => prev ?? getAuthUser())
             }
 
             try {

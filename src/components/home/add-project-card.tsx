@@ -26,6 +26,7 @@ export function AddProjectCard({ label, onClick }: AddProjectCardProps) {
                 <div className={projectCardIconAreaClass} />
                 <h2 className={projectCardTitleClass}>{label}</h2>
                 <p className={projectCardDescClass}>{'\u00a0\n\u00a0'}</p>
+                <div className="min-h-0 flex-1" />
             </div>
 
             <span className="absolute inset-0 flex items-center justify-center text-4xl font-light leading-none text-zinc-400 sm:text-5xl dark:text-zinc-500">

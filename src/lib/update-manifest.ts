@@ -2,27 +2,24 @@ import type { HomeLocale } from '@/locales/home'
 
 const SHOWN_NOTICE_STORAGE_KEY = 'pakeplus-shown-notice'
 
-/** Locale keys inside the remote updater manifest (`shared/update.json`). */
+/** Locale keys inside the remote notify-upgrade manifest (`shared/desktop.json`). */
 export type UpdateManifestLocaleKey = 'zh' | 'zhTw' | 'en' | 'ja' | 'ko'
 
 export type UpdateManifestLocaleBlock = {
     note?: string
-    lianxi?: string
-    always?: string
-    codeTips?: string
-    uptips?: string
-    contact?: string
+    update?: string
     noteLink?: string
 }
 
 /**
  * Custom fields from `Update.rawJson` (Tauri updater endpoint JSON).
- * Standard fields (`version`, `notes`, `platforms`, …) also live on `Update`.
+ * Standard fields (`version`, `platforms`, …) also live on `Update`.
+ * Aligns with server `PlatformConfig` / `shared/desktop.json`.
  */
 export type UpdateManifestExtras = {
     version?: string
-    force?: boolean
-    tauriShow?: boolean
+    forceUpdate?: boolean
+    showNote?: boolean
     noteRepeat?: boolean
     zh?: UpdateManifestLocaleBlock
     en?: UpdateManifestLocaleBlock
@@ -59,7 +56,7 @@ function readLocaleBlock(
     if (!isRecord(block)) return undefined
     return {
         note: readString(block, 'note'),
-        uptips: readString(block, 'uptips'),
+        update: readString(block, 'update'),
         noteLink: readString(block, 'noteLink'),
     }
 }
@@ -70,8 +67,8 @@ export function parseUpdateManifestExtras(
 ): UpdateManifestExtras {
     return {
         version: readString(rawJson, 'version'),
-        force: rawJson.force === true,
-        tauriShow: rawJson.tauriShow === true,
+        forceUpdate: rawJson.forceUpdate === true,
+        showNote: rawJson.showNote === true,
         // Default true: show again each launch unless explicitly false.
         noteRepeat: rawJson.noteRepeat !== false,
         zh: readLocaleBlock(rawJson, 'zh'),
@@ -109,7 +106,7 @@ export function isVersionNewer(remote: string, current: string): boolean {
 function localeField(
     extras: UpdateManifestExtras,
     locale: HomeLocale,
-    field: 'note' | 'uptips' | 'noteLink'
+    field: 'note' | 'update' | 'noteLink'
 ): string {
     const key = LOCALE_TO_MANIFEST[locale]
     const primary = extras[key]?.[field]?.trim()
@@ -121,12 +118,12 @@ function localeField(
     return ''
 }
 
-/** Localized update tips (`uptips`); falls back to en → zh → empty. */
+/** Localized update tips (`update`); falls back to en → zh → empty. */
 export function getUpdateTips(
     extras: UpdateManifestExtras,
     locale: HomeLocale
 ): string {
-    return localeField(extras, locale, 'uptips')
+    return localeField(extras, locale, 'update')
 }
 
 /** Localized notice body (`note`); falls back to en → zh → empty. */

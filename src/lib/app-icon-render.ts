@@ -1,4 +1,5 @@
-import { toIconSrc } from '@/lib/file-api'
+import logoWebp from '@/assets/logo.webp'
+import { resolveIconForCanvas } from '@/lib/file-api'
 
 export type IconTransform = {
     scale: number
@@ -8,7 +9,11 @@ export type IconTransform = {
 
 export const ICON_VIEWPORT_SIZE = 280
 export const ICON_OUTPUT_SIZE = 512
-export const DEFAULT_ICON_BORDER_RADIUS = 22
+export const DEFAULT_ICON_BORDER_RADIUS = 10
+
+/** UI placeholder when a project has no custom app icon. */
+export const APP_ICON_PLACEHOLDER_SRC =
+    typeof logoWebp === 'string' ? logoWebp : logoWebp.src
 
 export function getDefaultIconTransform(): IconTransform {
     return { scale: 1, x: 0, y: 0 }
@@ -19,7 +24,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
         const img = new Image()
         img.onload = () => resolve(img)
         img.onerror = reject
-        img.src = toIconSrc(src)
+        img.src = src
     })
 }
 
@@ -83,7 +88,9 @@ export async function renderAppIcon(
     viewportSize = ICON_VIEWPORT_SIZE,
     outputSize = ICON_OUTPUT_SIZE
 ): Promise<string> {
-    const img = await loadImage(source)
+    // Filesystem icons must be data URLs; asset:// images taint the canvas.
+    const canvasSrc = await resolveIconForCanvas(source)
+    const img = await loadImage(canvasSrc)
     const canvas = document.createElement('canvas')
     canvas.width = outputSize
     canvas.height = outputSize

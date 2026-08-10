@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { APP_ICON_PLACEHOLDER_SRC } from '@/lib/app-icon-render'
 import { appDetailHref } from '@/lib/app-detail-route'
 import { toIconSrc } from '@/lib/file-api'
 import type { Project } from '@/stores/project-store'
@@ -38,7 +39,7 @@ export function ProjectCard({
 }: ProjectCardProps) {
     const displayName = project.show_name || project.app_id
     const displayDesc = project.url || project.description
-    const iconSrc = toIconSrc(project.icon)
+    const iconSrc = toIconSrc(project.icon) || APP_ICON_PLACEHOLDER_SRC
     const [menu, setMenu] = useState<MenuState | null>(null)
 
     function closeMenu() {
@@ -58,25 +59,16 @@ export function ProjectCard({
                 className={`${projectCardOuterClass} cursor-pointer border-zinc-200 bg-white transition-[border-color,box-shadow] hover:border-zinc-300 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/90 dark:hover:border-zinc-700`}
                 onContextMenu={handleContextMenu}
             >
-                <div
-                    className={`${projectCardIconAreaClass} overflow-hidden ${
-                        iconSrc
-                            ? 'border-zinc-200 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-950'
-                            : 'bg-linear-to-b from-blue-500 to-blue-700'
-                    }`}
-                >
-                    {iconSrc ? (
-                        <img
-                            src={iconSrc}
-                            alt=""
-                            className="h-full w-full object-cover"
-                        />
-                    ) : (
-                        <ProjectIcon />
-                    )}
+                <div className={`${projectCardIconAreaClass} border-zinc-200`}>
+                    <img
+                        src={iconSrc}
+                        alt=""
+                        className="h-full w-full object-cover"
+                    />
                 </div>
                 <h2 className={projectCardTitleClass}>{displayName}</h2>
                 <p className={projectCardDescClass}>{displayDesc}</p>
+                <div className="min-h-0 flex-1" aria-hidden />
             </Link>
 
             {menu ? (
@@ -127,11 +119,11 @@ function ProjectContextMenu({
         const pad = 8
         const left = Math.min(
             Math.max(pad, x),
-            window.innerWidth - rect.width - pad,
+            window.innerWidth - rect.width - pad
         )
         const top = Math.min(
             Math.max(pad, y),
-            window.innerHeight - rect.height - pad,
+            window.innerHeight - rect.height - pad
         )
         setPos({ left, top })
     }, [x, y])
@@ -178,33 +170,6 @@ function ProjectContextMenu({
                 {deleteLabel}
             </button>
         </div>,
-        document.body,
-    )
-}
-
-function ProjectIcon() {
-    return (
-        <svg
-            width="56"
-            height="56"
-            viewBox="0 0 24 24"
-            fill="none"
-            className="text-white drop-shadow-sm"
-            aria-hidden
-        >
-            <path
-                d="M12 3C7.03 3 3 6.58 3 11c0 3.31 2.69 6 6 6h1.5c.83 0 1.5.67 1.5 1.5S11.33 20 10.5 20H8c-.55 0-1 .45-1 1s.45 1 1 1h8c.55 0 1-.45 1-1s-.45-1-1-1h-2.5c-.83 0-1.5-.67-1.5-1.5S14.67 17 15.5 17H17c3.31 0 6-2.69 6-6 0-4.42-4.03-8-9-8z"
-                fill="currentColor"
-                opacity="0.95"
-            />
-            <circle cx="9" cy="10" r="1.25" fill="#1e40af" />
-            <circle cx="15" cy="10" r="1.25" fill="#1e40af" />
-            <path
-                d="M9 13.5c.8 1.2 2.2 2 4 2s3.2-.8 4-2"
-                stroke="#1e40af"
-                strokeWidth="1.2"
-                strokeLinecap="round"
-            />
-        </svg>
+        document.body
     )
 }

@@ -41,7 +41,7 @@ export const koAppDetailStrings = {
     iconRemove: '아이콘 제거',
     iconHint: 'PNG, JPG, WebP 지원. 자르기 및 모서리 둥글게 설정 가능.',
     iconEditorTitle: '아이콘 편집',
-    iconCropHint: '드래그로 위치 조정, 휠로 확대, 슬라이더로 모서리 둥글기.',
+    iconCropHint: '드래그로 위치 조정, 휠 또는 핀치로 확대.',
     iconRadiusLabel: '모서리',
     save: '저장',
     saving: '저장 중…',

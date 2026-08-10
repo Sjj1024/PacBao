@@ -30,8 +30,8 @@ type DialogMode = 'update' | 'notice'
 
 /**
  * On launch: `check()` → read `Update.rawJson`.
- * Newer remote version → update dialog (`uptips` / `force`).
- * Otherwise → notice when `tauriShow` (`note` / `noteRepeat` / `noteLink`).
+ * Newer remote version → update dialog (`update` / `forceUpdate`).
+ * Otherwise → notice when `showNote` (`note` / `noteRepeat` / `noteLink`).
  */
 export function AppUpdater() {
     const isDesktop = useTauriDesktop()
@@ -50,7 +50,7 @@ export function AppUpdater() {
     const titleId = useId()
     const messageId = useId()
 
-    const force = mode === 'update' && extras?.force === true
+    const force = mode === 'update' && extras?.forceUpdate === true
     const tips = useMemo(
         () => (extras ? getUpdateTips(extras, locale) : ''),
         [extras, locale]
@@ -105,7 +105,7 @@ export function AppUpdater() {
             // No upgrade: use the same rawJson for notice, then release the Update.
             await update.close()
             if (cancelled) return
-            if (!raw.tauriShow) return
+            if (!raw.showNote) return
 
             const currentLocale = useLocaleStore.getState().locale
             const note = getNoticeNote(raw, currentLocale)

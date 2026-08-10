@@ -39,6 +39,7 @@ import {
 import { headerIconButtonClass } from '@/components/home/header-actions'
 import { useAuthUser } from '@/hooks/use-auth-user'
 import {
+    APP_ICON_PLACEHOLDER_SRC,
     DEFAULT_ICON_BORDER_RADIUS,
     getDefaultIconTransform,
     type IconTransform,
@@ -50,6 +51,7 @@ import { APP_DETAIL_STRINGS, type AppDetailStrings } from '@/locales/app-detail'
 import { HOME_STRINGS } from '@/locales/home'
 import { selectLocale, useLocaleStore } from '@/stores/locale-store'
 import { resolveAppDetailId } from '@/lib/app-detail-route'
+import { getAuthUser } from '@/lib/auth-token'
 import { createBuildTask, BuildTaskApiError } from '@/lib/build-task-api'
 import { FileApiError, resolveIconPair, toIconSrc } from '@/lib/file-api'
 import { migrateProjectIconsToDisk } from '@/lib/migrate-project-icons'
@@ -112,7 +114,7 @@ import {
 const ScriptEditorSection = dynamic(
     () =>
         import('@/components/app-detail/script-editor-section').then(
-            (mod) => mod.ScriptEditorSection,
+            (mod) => mod.ScriptEditorSection
         ),
     {
         ssr: false,
@@ -121,7 +123,7 @@ const ScriptEditorSection = dynamic(
                 Loading editor?
             </div>
         ),
-    },
+    }
 )
 
 type FormFields = 'show_name' | 'url' | 'app_id' | 'version'
@@ -411,7 +413,7 @@ function phoneConfigLabels(t: AppDetailStrings): PhoneConfigLabels {
 
 /** Map window option keys to localized labels. */
 function desktopWindowOptionLabels(
-    t: AppDetailStrings,
+    t: AppDetailStrings
 ): Record<DesktopWindowOptionKey, string> {
     return {
         dragDropEnabled: t.desktopWinDragDropEnabled,
@@ -510,7 +512,7 @@ function isValidUrl(value: string) {
 /** Required software-config fields for preview and pack/publish. */
 function collectRequiredConfigErrors(
     input: Pick<FormSnapshotInput, 'show_name' | 'url' | 'app_id' | 'version'>,
-    t: AppDetailStrings,
+    t: AppDetailStrings
 ): Partial<Record<FormFields, string>> {
     const next: Partial<Record<FormFields, string>> = {}
     if (!input.show_name.trim()) next.show_name = t.appNameRequired
@@ -537,25 +539,6 @@ function readImageAsDataUrl(file: File): Promise<string> {
         reader.onerror = reject
         reader.readAsDataURL(file)
     })
-}
-
-function DefaultAppIcon({ className }: { className?: string }) {
-    return (
-        <svg
-            width="32"
-            height="32"
-            viewBox="0 0 24 24"
-            fill="none"
-            className={className}
-            aria-hidden
-        >
-            <path
-                d="M12 3C7.03 3 3 6.58 3 11c0 3.31 2.69 6 6 6h1.5c.83 0 1.5.67 1.5 1.5S11.33 20 10.5 20H8c-.55 0-1 .45-1 1s.45 1 1 1h8c.55 0 1-.45 1-1s-.45-1-1-1h-2.5c-.83 0-1.5-.67-1.5-1.5S14.67 17 15.5 17H17c3.31 0 6-2.69 6-6 0-4.42-4.03-8-9-8z"
-                fill="currentColor"
-                opacity="0.95"
-            />
-        </svg>
-    )
 }
 
 export function AppDetailPageClient() {
@@ -585,10 +568,10 @@ export function AppDetailPageClient() {
     const [description, setDescription] = useState('')
     const [windowMode, setWindowMode] = useState<WindowMode>('desktop')
     const [windowWidth, setWindowWidth] = useState(
-        WINDOW_SIZE_PRESETS.desktop.width,
+        WINDOW_SIZE_PRESETS.desktop.width
     )
     const [windowHeight, setWindowHeight] = useState(
-        WINDOW_SIZE_PRESETS.desktop.height,
+        WINDOW_SIZE_PRESETS.desktop.height
     )
     const [userAgent, setUserAgent] = useState('')
     const [proxyUrl, setProxyUrl] = useState('')
@@ -598,15 +581,15 @@ export function AppDetailPageClient() {
     const [icon, setIcon] = useState('')
     const [iconSource, setIconSource] = useState('')
     const [iconBorderRadius, setIconBorderRadius] = useState(
-        DEFAULT_ICON_BORDER_RADIUS,
+        DEFAULT_ICON_BORDER_RADIUS
     )
     const [iconTransform, setIconTransform] = useState<IconTransform>(
-        getDefaultIconTransform(),
+        getDefaultIconTransform()
     )
     const [iconEditorOpen, setIconEditorOpen] = useState(false)
     const [editorSource, setEditorSource] = useState('')
     const [errors, setErrors] = useState<Partial<Record<FormFields, string>>>(
-        {},
+        {}
     )
     const [saving, setSaving] = useState(false)
     const [saveStatus, setSaveStatus] = useState<'idle' | 'error'>('idle')
@@ -692,8 +675,9 @@ export function AppDetailPageClient() {
         if (existing) {
             await migrateProjectIconsToDisk()
             const refreshed =
-                useProjectStore.getState().projects.find((item) => item.id === id) ??
-                existing
+                useProjectStore
+                    .getState()
+                    .projects.find((item) => item.id === id) ?? existing
             const config =
                 refreshed.ppConfig ??
                 buildPpConfigFromApiProject({
@@ -718,9 +702,7 @@ export function AppDetailPageClient() {
         setDetailError('')
         try {
             const data = await getProject(projectId)
-            const config =
-                data.config ??
-                buildPpConfigFromApiProject(data)
+            const config = data.config ?? buildPpConfigFromApiProject(data)
             setPpConfig(config)
             upsertProject({
                 ...mergeProjectFromApi(data, existing),
@@ -736,7 +718,7 @@ export function AppDetailPageClient() {
             setDetailError(
                 err instanceof ProjectApiError
                     ? err.message
-                    : t.loadDetailFailed,
+                    : t.loadDetailFailed
             )
         }
     }, [id, upsertProject, t.loadDetailFailed])
@@ -794,8 +776,8 @@ export function AppDetailPageClient() {
             locale === 'zh-TW'
                 ? 'zh-Hant'
                 : locale === 'zh-CN'
-                  ? 'zh-CN'
-                  : locale
+                ? 'zh-CN'
+                : locale
         document.documentElement.lang = htmlLang
     }, [locale])
 
@@ -819,11 +801,12 @@ export function AppDetailPageClient() {
                 })
             } catch (err) {
                 const message =
-                    err instanceof Error && err.message === 'invalid preview url'
+                    err instanceof Error &&
+                    err.message === 'invalid preview url'
                         ? t.websiteUrlInvalid
                         : err instanceof Error
-                          ? err.message
-                          : t.websiteUrlInvalid
+                        ? err.message
+                        : t.websiteUrlInvalid
                 setDeleteAlert({ open: true, message })
             }
         })()
@@ -938,7 +921,7 @@ export function AppDetailPageClient() {
     function validate() {
         const next = collectRequiredConfigErrors(
             { show_name, url, app_id, version },
-            t,
+            t
         )
         setErrors(next)
         return Object.keys(next).length === 0
@@ -1079,8 +1062,7 @@ export function AppDetailPageClient() {
                     url: trimmedUrl,
                     packageId: trimmedAppId,
                     version: trimmedVersion,
-                    description:
-                        values.description.trim() || description,
+                    description: values.description.trim() || description,
                     icon: icon || iconSource,
                     debug: values.debug,
                     windowPersist: keepWindow,
@@ -1105,28 +1087,26 @@ export function AppDetailPageClient() {
                     const result = isLocalWebclip
                         ? await packWebclip(packProject)
                         : isLocalWindows
-                          ? await packWindows(packProject)
-                          : isLocalIos
-                            ? await packIos(packProject)
-                            : isLocalMacos
-                              ? await packMacos(packProject)
-                              : await packAndroid(packProject)
+                        ? await packWindows(packProject)
+                        : isLocalIos
+                        ? await packIos(packProject)
+                        : isLocalMacos
+                        ? await packMacos(packProject)
+                        : await packAndroid(packProject)
                     packStore.setSuccess(result.outputPath, result.fileName)
 
                     const nextConfig = applyPublishToPpConfig(
                         ppConfig ??
                             project.ppConfig ??
                             buildPpConfigFromApiProject({
-                                name:
-                                    project.internalName ||
-                                    project.show_name,
+                                name: project.internalName || project.show_name,
                                 show_name: trimmedName,
                                 app_id: trimmedAppId,
                                 url: trimmedUrl,
                                 version: trimmedVersion,
                                 icon: icon,
                             }),
-                        values,
+                        values
                     )
                     setPpConfig(nextConfig)
                     updateProject(id, {
@@ -1142,17 +1122,17 @@ export function AppDetailPageClient() {
                     const successTemplate = isLocalWebclip
                         ? t.packWebclipSuccess
                         : isLocalWindows
-                          ? t.packWindowsSuccess
-                          : isLocalIos
-                            ? t.packIosSuccess
-                            : isLocalMacos
-                              ? t.packMacosSuccess
-                              : t.packAndroidSuccess
+                        ? t.packWindowsSuccess
+                        : isLocalIos
+                        ? t.packIosSuccess
+                        : isLocalMacos
+                        ? t.packMacosSuccess
+                        : t.packAndroidSuccess
                     setDeleteAlert({
                         open: true,
                         message: successTemplate.replace(
                             '{fileName}',
-                            result.fileName,
+                            result.fileName
                         ),
                     })
                 } finally {
@@ -1208,7 +1188,7 @@ export function AppDetailPageClient() {
             if (publishMode === 'mobile') {
                 const nextConfig = applyMobilePublishToPpConfig(
                     formConfig,
-                    values,
+                    values
                 )
                 const payload = buildMobilePublishTaskPayload({
                     pro_id: projectId,
@@ -1270,7 +1250,7 @@ export function AppDetailPageClient() {
                     err instanceof BuildTaskApiError ||
                     err instanceof FileApiError
                     ? err.message
-                    : t.publishFailed,
+                    : t.publishFailed
             )
         } finally {
             setPublishing(false)
@@ -1313,11 +1293,8 @@ export function AppDetailPageClient() {
             form.ppConfig?.name ||
             form.project.ppConfig?.name ||
             form.project.show_name
-        if (!form.authUserId) {
-            setSaveStatus('error')
-            setSaveError(t.saveFailed)
-            return false
-        }
+        // Local project store does not require login; fall back like create-project.
+        const authUserId = form.authUserId ?? getAuthUser()?.id ?? 'local'
 
         if (savingRef.current) {
             pendingSaveRef.current = true
@@ -1330,7 +1307,7 @@ export function AppDetailPageClient() {
         setSaveError('')
 
         try {
-            const folder = `${form.authUserId}/${configInternalName}`
+            const folder = `${authUserId}/${configInternalName}`
             const { icon: iconUrl, iconSource: nextIconSource } =
                 await resolveIconPair(form.icon, form.iconSource, folder)
             const trimmedName = form.show_name.trim()
@@ -1403,7 +1380,7 @@ export function AppDetailPageClient() {
             setSaveError(
                 err instanceof ProjectApiError || err instanceof FileApiError
                     ? err.message
-                    : t.saveFailed,
+                    : t.saveFailed
             )
             return false
         } finally {
@@ -1434,7 +1411,15 @@ export function AppDetailPageClient() {
         return () => window.removeEventListener('keydown', onKeyDown)
         // saveProject closes over latest formValuesRef / locale strings.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [t.saveSuccess, t.saveFailed, t.appNameRequired, t.appIdRequired, t.websiteUrlInvalid, t.versionInvalid, id])
+    }, [
+        t.saveSuccess,
+        t.saveFailed,
+        t.appNameRequired,
+        t.appIdRequired,
+        t.websiteUrlInvalid,
+        t.versionInvalid,
+        id,
+    ])
 
     useEffect(() => {
         if (!project || detailStatus !== 'ready' || skipAutoSaveRef.current) {
@@ -1775,22 +1760,16 @@ export function AppDetailPageClient() {
                                 <div
                                     className={`${formInputClass} flex h-auto min-h-[5.5rem] flex-col gap-3 py-3 sm:flex-row sm:items-center`}
                                 >
-                                    <div
-                                        className={`flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700 ${
-                                            icon
-                                                ? 'bg-zinc-100 dark:bg-zinc-950'
-                                                : 'bg-linear-to-b from-blue-500 to-blue-700'
-                                        }`}
-                                    >
-                                        {icon ? (
-                                            <img
-                                                src={toIconSrc(icon)}
-                                                alt=""
-                                                className="h-full w-full object-cover"
-                                            />
-                                        ) : (
-                                            <DefaultAppIcon className="text-white drop-shadow-sm" />
-                                        )}
+                                    <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg">
+                                        <img
+                                            src={
+                                                icon
+                                                    ? toIconSrc(icon)
+                                                    : APP_ICON_PLACEHOLDER_SRC
+                                            }
+                                            alt=""
+                                            className="h-full w-full object-cover"
+                                        />
                                     </div>
                                     <div className="flex min-w-0 flex-1 flex-col gap-2">
                                         <input
@@ -1890,7 +1869,7 @@ export function AppDetailPageClient() {
                                     ]}
                                     onChange={(value) =>
                                         handleWindowModeChange(
-                                            value as WindowMode,
+                                            value as WindowMode
                                         )
                                     }
                                 />
@@ -1910,7 +1889,7 @@ export function AppDetailPageClient() {
                                         value={windowWidth}
                                         onChange={(e) =>
                                             handleWindowWidthChange(
-                                                Number(e.target.value) || 0,
+                                                Number(e.target.value) || 0
                                             )
                                         }
                                         className={windowSizeInputClass}
@@ -1931,7 +1910,7 @@ export function AppDetailPageClient() {
                                         value={windowHeight}
                                         onChange={(e) =>
                                             handleWindowHeightChange(
-                                                Number(e.target.value) || 0,
+                                                Number(e.target.value) || 0
                                             )
                                         }
                                         className={windowSizeInputClass}
@@ -2080,25 +2059,23 @@ export function AppDetailPageClient() {
                         ? ppConfig
                             ? {
                                   ...mobilePublishInitialValuesFromPpConfig(
-                                      ppConfig,
+                                      ppConfig
                                   ),
                                   method: '',
                               }
                             : project.ppConfig
-                              ? {
-                                    ...mobilePublishInitialValuesFromPpConfig(
-                                        project.ppConfig,
-                                    ),
-                                    method: '',
-                                }
-                              : undefined
-                        : ppConfig
-                          ? publishInitialValuesFromPpConfig(ppConfig)
-                          : project.ppConfig
-                            ? publishInitialValuesFromPpConfig(
-                                  project.ppConfig,
-                              )
+                            ? {
+                                  ...mobilePublishInitialValuesFromPpConfig(
+                                      project.ppConfig
+                                  ),
+                                  method: '',
+                              }
                             : undefined
+                        : ppConfig
+                        ? publishInitialValuesFromPpConfig(ppConfig)
+                        : project.ppConfig
+                        ? publishInitialValuesFromPpConfig(project.ppConfig)
+                        : undefined
                 }
                 submitting={publishing}
                 submitError={publishError}
