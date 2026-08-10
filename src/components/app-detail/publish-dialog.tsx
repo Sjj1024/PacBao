@@ -632,11 +632,17 @@ export function PublishDialog({
         buildInitialValues(labels, initialValues, mode),
     )
     const [error, setError] = useState('')
+    const wasOpenRef = useRef(false)
 
+    // Only hydrate from props when the dialog opens. Parent re-renders recreate
+    // `labels` / `initialValues` every time; resetting while open would wipe the
+    // user's platform selection (visible flash on confirm).
     useEffect(() => {
-        if (!open) return
-        setValues(buildInitialValues(labels, initialValues, mode))
-        setError('')
+        if (open && !wasOpenRef.current) {
+            setValues(buildInitialValues(labels, initialValues, mode))
+            setError('')
+        }
+        wasOpenRef.current = open
     }, [open, labels, initialValues, mode])
 
     useEffect(() => {

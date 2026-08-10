@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import {
     formErrorClass,
@@ -49,7 +49,7 @@ import { PageShell } from '@/components/layout/page-shell'
 import { APP_DETAIL_STRINGS, type AppDetailStrings } from '@/locales/app-detail'
 import { HOME_STRINGS } from '@/locales/home'
 import { selectLocale, useLocaleStore } from '@/stores/locale-store'
-import { appIdFromPathname } from '@/lib/app-detail-route'
+import { resolveAppDetailId } from '@/lib/app-detail-route'
 import { createBuildTask, BuildTaskApiError } from '@/lib/build-task-api'
 import { FileApiError, resolveIconPair, toIconSrc } from '@/lib/file-api'
 import { migrateProjectIconsToDisk } from '@/lib/migrate-project-icons'
@@ -507,6 +507,29 @@ function isValidUrl(value: string) {
     }
 }
 
+/** Required software-config fields for preview and pack/publish. */
+function collectRequiredConfigErrors(
+    input: Pick<FormSnapshotInput, 'show_name' | 'url' | 'app_id' | 'version'>,
+    t: AppDetailStrings,
+): Partial<Record<FormFields, string>> {
+    const next: Partial<Record<FormFields, string>> = {}
+    if (!input.show_name.trim()) next.show_name = t.appNameRequired
+    if (!input.app_id.trim()) next.app_id = t.appIdRequired
+    const trimmedUrl = input.url.trim()
+    if (!trimmedUrl) {
+        next.url = t.websiteUrlRequired
+    } else if (!isValidUrl(trimmedUrl)) {
+        next.url = t.websiteUrlInvalid
+    }
+    const trimmedVersion = input.version.trim()
+    if (!trimmedVersion) {
+        next.version = t.versionRequired
+    } else if (!versionPattern.test(trimmedVersion)) {
+        next.version = t.versionInvalid
+    }
+    return next
+}
+
 function readImageAsDataUrl(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
         const reader = new FileReader()
@@ -538,7 +561,8 @@ function DefaultAppIcon({ className }: { className?: string }) {
 export function AppDetailPageClient() {
     const router = useRouter()
     const pathname = usePathname()
-    const id = appIdFromPathname(pathname)
+    const searchParams = useSearchParams()
+    const id = resolveAppDetailId(pathname, searchParams.toString())
     const locale = useLocaleStore(selectLocale)
     const homeT = HOME_STRINGS[locale]
     const t = APP_DETAIL_STRINGS[locale]
@@ -782,6 +806,7 @@ export function AppDetailPageClient() {
     }, [])
 
     function handleMobileClick() {
+        if (!ensureRequiredConfig()) return
         void (async () => {
             try {
                 await openPreviewWindow({
@@ -911,19 +936,19 @@ export function AppDetailPageClient() {
     }
 
     function validate() {
-        const next: Partial<Record<FormFields, string>> = {}
-        if (!show_name.trim()) next.show_name = t.appNameRequired
-        if (!app_id.trim()) next.app_id = t.appIdRequired
-        const trimmedUrl = url.trim()
-        if (trimmedUrl && !isValidUrl(trimmedUrl)) {
-            next.url = t.websiteUrlInvalid
-        }
-        const trimmedVersion = version.trim()
-        if (trimmedVersion && !versionPattern.test(trimmedVersion)) {
-            next.version = t.versionInvalid
-        }
+        const next = collectRequiredConfigErrors(
+            { show_name, url, app_id, version },
+            t,
+        )
         setErrors(next)
         return Object.keys(next).length === 0
+    }
+
+    /** Blocks preview / publish when required config fields are missing. */
+    function ensureRequiredConfig(): boolean {
+        if (validate()) return true
+        setActiveSection('basic')
+        return false
     }
 
     async function handleIconChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -995,7 +1020,7 @@ export function AppDetailPageClient() {
 
     function handlePublish() {
         if (!project) return
-        if (!validate()) return
+        if (!ensureRequiredConfig()) return
         setPublishError('')
         setPublishMode(activeSection === 'mobile' ? 'mobile' : 'desktop')
         setPublishDialogOpen(true)
@@ -1003,13 +1028,17 @@ export function AppDetailPageClient() {
 
     async function handlePublishConfirm(values: PublishFormValues) {
         if (!project) return
+        if (!ensureRequiredConfig()) {
+            setPublishDialogOpen(false)
+            return
+        }
         setPublishing(true)
         setPublishError('')
         try {
             const trimmedName = show_name.trim()
             const trimmedUrl = url.trim()
             const trimmedAppId = app_id.trim()
-            const trimmedVersion = version.trim() || '1.0.0'
+            const trimmedVersion = version.trim()
             const localPlatform = values.platforms[0]
             const isLocalAndroid =
                 publishMode === 'desktop' &&
@@ -1592,6 +1621,12 @@ export function AppDetailPageClient() {
                                     className={formLabelClass}
                                 >
                                     {t.appNameLabel}
+                                    <span
+                                        className="ml-0.5 text-red-500"
+                                        aria-hidden
+                                    >
+                                        *
+                                    </span>
                                 </label>
                                 <input
                                     id="app-name"
@@ -1624,6 +1659,12 @@ export function AppDetailPageClient() {
                                     className={formLabelClass}
                                 >
                                     {t.websiteUrlLabel}
+                                    <span
+                                        className="ml-0.5 text-red-500"
+                                        aria-hidden
+                                    >
+                                        *
+                                    </span>
                                 </label>
                                 <input
                                     id="website-url"
@@ -1657,6 +1698,12 @@ export function AppDetailPageClient() {
                                     className={formLabelClass}
                                 >
                                     {t.appIdLabel}
+                                    <span
+                                        className="ml-0.5 text-red-500"
+                                        aria-hidden
+                                    >
+                                        *
+                                    </span>
                                 </label>
                                 <input
                                     id="app-id"
@@ -1689,6 +1736,12 @@ export function AppDetailPageClient() {
                                     className={formLabelClass}
                                 >
                                     {t.versionLabel}
+                                    <span
+                                        className="ml-0.5 text-red-500"
+                                        aria-hidden
+                                    >
+                                        *
+                                    </span>
                                 </label>
                                 <input
                                     id="app-version"

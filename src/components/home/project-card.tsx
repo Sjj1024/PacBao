@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { appDetailHref } from '@/lib/app-detail-route'
 import { toIconSrc } from '@/lib/file-api'
 import type { Project } from '@/stores/project-store'
 import {
@@ -53,7 +54,7 @@ export function ProjectCard({
     return (
         <>
             <Link
-                href={`/apps/${project.id}/`}
+                href={appDetailHref(project.id)}
                 className={`${projectCardOuterClass} cursor-pointer border-zinc-200 bg-white transition-[border-color,box-shadow] hover:border-zinc-300 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/90 dark:hover:border-zinc-700`}
                 onContextMenu={handleContextMenu}
             >

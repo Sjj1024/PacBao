@@ -16,6 +16,7 @@ import {
     listProjects,
     ProjectApiError,
 } from '@/lib/project-api'
+import { appDetailHref } from '@/lib/app-detail-route'
 import { buildCreateProjectPayload } from '@/lib/ppconfig'
 import { migrateProjectIconsToDisk } from '@/lib/migrate-project-icons'
 import { HOME_STRINGS } from '@/locales/home'
@@ -126,7 +127,7 @@ export function HomePageClient() {
                 config: payload.config,
             })
             setCreateDialogOpen(false)
-            router.push(`/apps/${id}/`)
+            router.push(appDetailHref(String(id)))
         } catch (err) {
             setCreateProjectError(
                 err instanceof ProjectApiError
@@ -139,7 +140,7 @@ export function HomePageClient() {
     }
 
     function handleEditProject(project: Project) {
-        router.push(`/apps/${project.id}/`)
+        router.push(appDetailHref(project.id))
     }
 
     function handleRequestDelete(project: Project) {

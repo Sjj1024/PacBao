@@ -6,12 +6,14 @@ export type AppDetailStrings = {
     appNameRequired: string
     websiteUrlLabel: string
     websiteUrlPlaceholder: string
+    websiteUrlRequired: string
     websiteUrlInvalid: string
     appIdLabel: string
     appIdPlaceholder: string
     appIdRequired: string
     versionLabel: string
     versionPlaceholder: string
+    versionRequired: string
     versionInvalid: string
     descriptionLabel: string
     descriptionPlaceholder: string
