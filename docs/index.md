@@ -6,7 +6,7 @@ hero:
     text: 何必是网站，秒变多端应用
     tagline: 输入网址或html文件与应用名，2秒生成可安装的手机与桌面应用
     image:
-        src: /logo.png
+        src: /logo.webp
         alt: PacBao
     actions:
         - theme: brand
