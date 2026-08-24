@@ -171,6 +171,20 @@
   }
 }
 
+.dl-state {
+  padding: 28px 20px;
+  border: 1px dashed var(--vp-c-divider);
+  border-radius: 14px;
+  text-align: center;
+  color: var(--vp-c-text-2);
+  font-size: 14px;
+}
+
+.dl-state-error {
+  color: #dc2626;
+  border-color: color-mix(in srgb, #dc2626 35%, var(--vp-c-divider));
+}
+
 .dl-recommend {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
