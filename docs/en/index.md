@@ -6,7 +6,7 @@ hero:
     text: Turn any URL into multi-platform apps
     tagline: Enter a website URL and app name, then export installable mobile and desktop apps in minutes — ideal for sites, H5 campaigns, and lightweight product entry points.
     image:
-        src: /logo.webp
+        src: /app-icon.webp
         alt: PacBao
     actions:
         - theme: brand
