@@ -4,14 +4,9 @@ const sharedNav = {
     zh: [
         { text: '首页', link: '/' },
         { text: '下载', link: '/download' },
-        { text: '指南', link: '/guide/introduction' },
-        {
-            text: '支持',
-            items: [
-                { text: '赞助我们', link: '/support/sponsor' },
-                { text: '定制开发', link: '/support/custom' },
-            ],
-        },
+        { text: '使用指南', link: '/guide/introduction' },
+        { text: '常见问题', link: '/question/index' },
+        { text: '赞助我们', link: '/sponsor/index' },
     ],
     en: [
         { text: 'Home', link: '/en/' },
