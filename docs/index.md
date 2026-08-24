@@ -12,9 +12,12 @@ hero:
         - theme: brand
           text: 立即下载
           link: /download
-        - theme: alt
+        - theme: brand
           text: 快速开始
           link: /guide/getting-started
+        - theme: alt
+          text: 赞助我们
+          link: /sponsor/
 
 features:
     - title: 开源项目
