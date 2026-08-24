@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./icon.png" alt="PacBao" width="120" height="120" />
+  <img src="./app-icon.webp" alt="PacBao" width="120" height="120" />
 </p>
 
 <h1 align="center">PacBao</h1>
