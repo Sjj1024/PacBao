@@ -4,7 +4,7 @@ layout: home
 hero:
     name: PacBao
     text: 何必是网站，秒变多端应用
-    tagline: 输入网址或html文件，2秒生成手机与桌面应用
+    tagline: 输入网址/html/vue/react等，2秒生成手机与桌面应用
     image:
         src: /app-icon.webp
         alt: PacBao
